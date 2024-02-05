@@ -46,6 +46,10 @@ example_iris_data:
   type: pandas.CSVDataset
   filepath: data/01_raw/iris.csv
 
-headline_gdp_vintages:
-  type: revisions_toolkit.datasets.gdp_datasets.HeadlineGDPVintage
+headline_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.HeadlineQGDPVintage
+  folderpath: data/01_raw/headline_gdp/
+
+headline_mgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.HeadlineMGDPVintage
   folderpath: data/01_raw/headline_gdp/

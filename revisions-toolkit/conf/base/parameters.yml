@@ -4,3 +4,8 @@
 example_test_data_ratio: 0.2
 example_num_train_iter: 10000
 example_learning_rate: 0.01
+
+
+quarterly_gdp_clean_filename: "quarterly_gdp.xlsx"
+monthly_gdp_raw_filename: "monthly_gdp_revisions.xlsx"
+monthly_gdp_clean_filename: "monthly_gdp.xlsx"
