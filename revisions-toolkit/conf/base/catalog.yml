@@ -2,54 +2,43 @@
 #
 # Documentation for this file format can be found in "The Data Catalog"
 # Link: https://docs.kedro.org/en/stable/data/data_catalog.html
-#
-# We support interacting with a variety of data stores including local file systems, cloud, network and HDFS
-#
-# An example data set definition can look as follows:
-#
-#bikes:
-#  type: pandas.CSVDataset
-#  filepath: "data/01_raw/bikes.csv"
-#
-#weather:
-#  type: spark.SparkDataset
-#  filepath: s3a://your_bucket/data/01_raw/weather*
-#  file_format: csv
-#  credentials: dev_s3
-#  load_args:
-#    header: True
-#    inferSchema: True
-#  save_args:
-#    sep: '|'
-#    header: True
-#
-#scooters:
-#  type: pandas.SQLTableDataset
-#  credentials: scooters_credentials
-#  table_name: scooters
-#  load_args:
-#    index_col: ['name']
-#    columns: ['name', 'gear']
-#  save_args:
-#    if_exists: 'replace'
-#    # if_exists: 'fail'
-#    # if_exists: 'append'
-#
-# The Data Catalog supports being able to reference the same file using two different Dataset implementations
-# (transcoding), templating and a way to reuse arguments that are frequently repeated. See more here:
-# https://docs.kedro.org/en/stable/data/data_catalog.html
-#
-# This is a data set used by the "Hello World" example pipeline provided with the project
-# template. Please feel free to remove it once you remove the example pipeline.
 
 example_iris_data:
   type: pandas.CSVDataset
   filepath: data/01_raw/iris.csv
 
 headline_qgdp_vintages:
-  type: revisions_toolkit.datasets.gdp_datasets.HeadlineQGDPVintage
-  folderpath: data/01_raw/headline_gdp/
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/headline/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforukgdpabmi"
+  dataset_name: "Headline Vintages"
+
+expenditure_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/expenditure/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforcomponentsfortheexpenditureapproachtothemeasureofukgdp"
+  dataset_name: "Expenditure Vintages"
+
+deflator_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/headline/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforukgdpdeflatorquarteronquarterayearago"
+  dataset_name: "Deflator Vintages"
 
 headline_mgdp_vintages:
-  type: revisions_toolkit.datasets.gdp_datasets.HeadlineMGDPVintage
-  folderpath: data/01_raw/headline_gdp/
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/headline/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesformonthlygdp"
+  dataset_name: "Monthly Vintages"
+
+income_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/investment/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforcomponentsfortheincomeapproachtothemeasureofukgdp"
+  dataset_name: "Income Vintages"
+
+investment_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/investmet/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstogrossfixedcapitalformationandbusinessinvestment"
+  dataset_name: "Investment Vintages"

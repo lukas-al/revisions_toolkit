@@ -9,11 +9,16 @@ to end-to-end production workflows.
 # 4. Save the data
 
 import logging
+from typing import List
 import pandas as pd
+import warnings
 
 log = logging.getLogger(__name__)
 
-def load_quarterly_data(data_dict: dict) -> pd.DataFrame:
+def load_data(
+    data_dict: dict, 
+    list_of_filenames_to_load: List[str]
+) -> List[pd.DataFrame]:
     """
     Load the quarterly data from the given data dictionary and return the dataframe.
     
@@ -24,29 +29,35 @@ def load_quarterly_data(data_dict: dict) -> pd.DataFrame:
         pd.DataFrame: The loaded data as a pandas DataFrame.
     """
     log.info("Loading the data...")
+    df_holder = []
     
-    for filename, dict_of_sheets in data_dict.items():
-        if "ABMI - Quarterly GDP at Market Prices" in filename:
-            for sheet_name, df in dict_of_sheets.items():
-                if "triangle" in sheet_name.lower():
-                    return df
+    for filename, dict_of_sheets in data_dict.items(): # For file extracted from the zip
+        for file_to_load in list_of_filenames_to_load: # For the list of files to load in config
+            if file_to_load.lower() in filename.lower(): # If the names match
+                for sheet_name, df in dict_of_sheets.items(): # For the sheets in the file
+                    if "triangle" in sheet_name.lower(): # If the sheet name contains "triangle"
+                        df_holder.append(df) # Append to a list of returns
+                    elif sheet_name.lower() == "estimate": # If the sheet name is "estimate"
+                        df_holder.append(df) # Append to a list of returns
+    
+    return df_holder
 
-def save_raw_data(data: pd.DataFrame, name: str) -> None:
-    """Save the data to the specified filepath.
+# def save_raw_data(data: pd.DataFrame, name: str) -> None:
+#     """Save the data to the specified filepath.
     
-    Args:
-        data (pd.DataFrame): The DataFrame containing the data to be saved.
+#     Args:
+#         data (pd.DataFrame): The DataFrame containing the data to be saved.
     
-    Returns:
-        None
-    """
-    log.info("Saving the raw data...")
+#     Returns:
+#         None
+#     """
+#     log.info("Saving the raw data...")
     
-    with pd.ExcelWriter(f"data/01_raw/{name}") as writer:
-        data.to_excel(writer, sheet_name="Raw data", index=True)
+#     with pd.ExcelWriter(f"data/01_raw/{name}") as writer:
+#         data.to_excel(writer, sheet_name="Raw data", index=True)
         
 
-def clean_quarterly_data(data: pd.DataFrame) -> pd.DataFrame:
+def clean_quarterly_data(data_list: List[pd.DataFrame]) -> pd.DataFrame:
     """
     Cleans the given GDP vintages dataset by performing the following steps:
     1. Drops unnecessary rows.
@@ -65,36 +76,47 @@ def clean_quarterly_data(data: pd.DataFrame) -> pd.DataFrame:
     """
     log.info("Cleaning the data...")
     
-    # Drop some unnecessary rows
-    data = data.drop(
-        data.index[[0,1,3,4,5,-1]]
-    )
-    # Replace the index with the first column
-    data.index = data.iloc[:, 0]
+    clean_data_list = []
     
-    # Drop the first column now it's been moved
-    data = data.drop(data.columns[0], axis=1)
+    for data in data_list:
     
-    # Make the first row into the names of the columns
-    data.columns = data.iloc[0]
-    
-    # Drop the first row
-    data = data.drop(data.index[0])
+        # Drop some unnecessary rows
+        data = data.drop(
+            data.index[[0,1,3,4,5,-1]]
+        )
+        # Replace the index with the first column
+        data.index = data.iloc[:, 0]
+        
+        # Drop the first column now it's been moved
+        data = data.drop(data.columns[0], axis=1)
+        
+        # Make the first row into the names of the columns
+        data.columns = data.iloc[0]
+        
+        # Drop the first row
+        data = data.drop(data.index[0])
 
-    # Rotate the table
-    data = data.T
+        # Rotate the table
+        data = data.T
+        
+        # Replace empty data with NaNs
+        pd.set_option('future.no_silent_downcasting', True) # Silly warning
+        data = data.replace(' ', pd.NA)
+        
+        # Turn the index into a datetime index which excel can read
+        data.index = data.index.map(lambda x: x.replace('Q1', '01').replace('Q2', '04').replace('Q3', '07').replace('Q4', '10'))
+       
+        with warnings.catch_warnings():  # Suppress the warning about not specifying a format
+            warnings.filterwarnings("ignore", category=UserWarning)
+            data.index = pd.to_datetime(data.index).to_period('Q') 
+        
+        
+        clean_data_list.append(data)
     
-    # Replace empty data with NaNs
-    data = data.replace(' ', pd.NA).infer_objects(copy=False)
-    
-    # Turn the index into a datetime index which excel can read
-    data.index = data.index.map(lambda x: x.replace('Q1', '01').replace('Q2', '04').replace('Q3', '07').replace('Q4', '10'))
-    data.index = pd.to_datetime(data.index).to_period('Q')
-    
-    return data
+    return clean_data_list
 
 
-def transform_and_combine(data: pd.DataFrame) -> dict:
+def transform_and_combine(data_list: List[pd.DataFrame]) -> dict:
     """
     Transforms the input DataFrame by constructing revision series for different quarters
     and combines them into a new DataFrame along with the original data.
@@ -105,26 +127,33 @@ def transform_and_combine(data: pd.DataFrame) -> dict:
     Returns:
         pd.DataFrame: The combined DataFrame containing the revisions triangle and the revision series.
     """
+    t_data_list = []
     log.info("Transforming the data...")
-    transformed_QGDP_revisions = pd.DataFrame(index=data.index)
     
-    transformed_QGDP_revisions["First Estimate"] = construct_revision_series(data, 0).values
-    transformed_QGDP_revisions["1st Period"] = construct_revision_series(data, 1).values
-    transformed_QGDP_revisions["2nd Period"] = construct_revision_series(data, 2).values
-    transformed_QGDP_revisions["3rd Period"] = construct_revision_series(data, 3).values
-    transformed_QGDP_revisions["4th Period"] = construct_revision_series(data, 4).values
-    transformed_QGDP_revisions["12th Period"] = construct_revision_series(data, 12).values
-    transformed_QGDP_revisions["36th Period"] = construct_revision_series(data, 36).values
-    
-    total_gdp_vintage = {
-        'Revisions triangle': data,
-        'Revisions series': transformed_QGDP_revisions
-    }
-    
-    return total_gdp_vintage
+    for data in data_list:
+            
+        transformed_revisions = pd.DataFrame(index=data.index)
+        
+        transformed_revisions["First Estimate"] = construct_revision_series(data, 0).values
+        transformed_revisions["1st Period"] = construct_revision_series(data, 1).values
+        transformed_revisions["2nd Period"] = construct_revision_series(data, 2).values
+        transformed_revisions["3rd Period"] = construct_revision_series(data, 3).values
+        transformed_revisions["4th Period"] = construct_revision_series(data, 4).values
+        transformed_revisions["12th Period"] = construct_revision_series(data, 12).values
+        transformed_revisions["36th Period"] = construct_revision_series(data, 36).values
+        
+        total_gdp_vintage = {
+            'Revisions triangle': data,
+            'Revisions series': transformed_revisions
+        }
+        
+        t_data_list.append(total_gdp_vintage)
+        
+        
+    return t_data_list
 
 
-def save_data(data: dict, name: str) -> None:
+def save_data(data_list: List[dict], input_name_list: List[str], save_path: str) -> None:
     """Save the data to the specified filepath.
     
     Args:
@@ -135,9 +164,10 @@ def save_data(data: dict, name: str) -> None:
     """
     log.info("Saving the data...")
     
-    with pd.ExcelWriter(f"data/02_intermediate/{name}") as writer:
-        for sheet_name, df in data.items():
-            df.to_excel(writer, sheet_name=sheet_name, index=True)
+    for data, name in zip(data_list, input_name_list):
+        with pd.ExcelWriter(f"{save_path}{name}_PROCESSED.xlsx") as writer:
+            for sheet_name, df in data.items():
+                df.to_excel(writer, sheet_name=sheet_name, index=True)
             
     
 

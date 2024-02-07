@@ -1,15 +1,18 @@
 from kedro.pipeline import node
 from kedro.pipeline.modular_pipeline import pipeline
 
-from .nodes import load_quarterly_data, clean_quarterly_data, save_data, transform_and_combine
+from .nodes import load_data, clean_quarterly_data, save_data, transform_and_combine
 
 
 def create_pipeline(**kwargs):
     return pipeline(
         [
             node(
-                func=load_quarterly_data,
-                inputs=["headline_qgdp_vintages"], # Input
+                func=load_data,
+                inputs=[
+                    "headline_qgdp_vintages", 
+                    "params:headline_qgdp_filename_list"
+                ],
                 outputs="loaded_QGDP_df",
                 name="Load_QGDP_data",
             ),
@@ -27,7 +30,11 @@ def create_pipeline(**kwargs):
             ),
             node(
                 func=save_data,
-                inputs=["transformed_QGDP_dict", "params:quarterly_gdp_clean_filename"],
+                inputs=[
+                    "transformed_QGDP_dict", 
+                    "params:headline_qgdp_filename_list",
+                    "params:headline_qgdp_writepath"
+                ],
                 outputs=None,
                 name="Save_QGDP_data",
             ),

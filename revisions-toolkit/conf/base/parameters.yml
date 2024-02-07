@@ -1,11 +1,46 @@
-# Parameters for the example pipeline. Feel free to delete these once you
-# remove the example pipeline from hooks.py and the example nodes in
-# `src/pipelines/`
-example_test_data_ratio: 0.2
-example_num_train_iter: 10000
-example_learning_rate: 0.01
+### Parameters for the project. Read the documentation to understand where things are and why.
 
 
-quarterly_gdp_clean_filename: "quarterly_gdp.xlsx"
-monthly_gdp_raw_filename: "monthly_gdp_revisions.xlsx"
-monthly_gdp_clean_filename: "monthly_gdp.xlsx"
+# THIS MATCHES THE FILENAMES IN THE DOWNLOADED ZIP FOLDERS WE WANT TO PROCESS
+headline_qgdp_filename_list: 
+  - "ABMI - Quarterly GDP at Market Prices"
+headline_qgdp_writepath: "data/02_intermediate/headline/"
+
+# THIS MATCHES THE FILENAMES IN THE DOWNLOADED ZIP FOLDERS WE WANT TO PROCESS
+headline_mgdp_filename_list:
+  - "mgdp revision triangle (m on m)"
+  - "mgdp revision triangle (3m on 3m)"
+headline_mgdp_writepath: "data/02_intermediate/headline/"
+
+# THIS MATCHES THE FILENAMES IN THE DOWNLOADED ZIP FOLDERS WE WANT TO PROCESS
+expenditure_qgdp_filename_list:
+  - "ABJR - Household Final Consumption"
+  - "BQKO - Imports of Goods"
+  - "BQKQ - Exports of Goods"
+  - "CAFU - Change in Inventories"
+  - "HAYO - Non-Profit"
+  - "IKBE - Export of Services"
+  - "IKBF - Imports of Services"
+  - "IKBK - Total Imports"
+  - "NMRY - General Government"
+  - "NPQT - Gross Fixed Capital"
+expenditure_writepath: "data/02_intermediate/expenditure/"
+
+# MATCHES THE FILENAME OF THE DOWNLOADED XL FILE
+deflator_qgdp_filename_list:
+  - ybgbgdpimplieddeflator.xlsx
+deflator_writepath: "data/02_intermediate/headline/"
+
+# MATCHES THE FILENAME OF THE DOWNLOADED XL FILE
+income_qgdp_filename_list:
+  - "CAEQ - Public corporations gross operating surplus.xlsx"
+  - "CAER - Private non-financial corporations gross operating surplus.xlsx"
+  - "CGBX - Other Income.xlsx"
+  - "CMVL - Taxes less subsidies.xlsx"
+  - "DTWM - Compensation of employees.xlsx"
+  - "NHCZ - Financial corporations gross operating surplus.xlsx"
+income_writepath: "data/02_intermediate/income/"
+
+investment_qgdp_filename_list:
+  - "dataset5rftrt.xls"
+investment_writepath: "data/02_intermediate/headline/"

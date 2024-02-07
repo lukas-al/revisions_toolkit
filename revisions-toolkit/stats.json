@@ -1,1 +1,1 @@
-{"loaded_QGDP_df": {"rows": 367, "columns": 128}, "loaded_MGDP_df": {"rows": 72, "columns": 323}, "example_iris_data": {"rows": 150, "columns": 5, "file_size": 3858}, "example_train_x": {"rows": 120, "columns": 4}, "example_train_y": {"rows": 120, "columns": 3}, "example_test_x": {"rows": 30, "columns": 4}, "example_test_y": {"rows": 30, "columns": 3}, "clean_QGDP_df": {"rows": 127, "columns": 360}, "clean_MGDP_df": {"rows": 322, "columns": 67}}
+{}

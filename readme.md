@@ -15,3 +15,13 @@ The project will be developed in the following stages:
 
 4. Subsequently construct the same for the GDP component level data
 5. Subsequently, construct the same for any ONS series.
+
+## Todo
+- [x] Headline QGDP
+- [x] Expenditure QGDP
+- [x] Headline MGDP
+- [x] Deflator QGDP
+- [ ] Income QGDP
+- [ ] Business Investment QGDP
+- [ ] GVA QGDP
+- [ ] NPISH QGDP
