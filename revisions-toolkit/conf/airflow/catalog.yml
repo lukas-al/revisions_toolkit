@@ -1,0 +1,99 @@
+### BASE DATASETS FOR STANDARD CONFIG
+example_iris_data:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/iris.csv
+
+headline_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/headline/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforukgdpabmi"
+  dataset_name: "Headline Vintages"
+
+expenditure_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/expenditure/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforcomponentsfortheexpenditureapproachtothemeasureofukgdp"
+  dataset_name: "Expenditure Vintages"
+
+deflator_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/headline/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforukgdpdeflatorquarteronquarterayearago"
+  dataset_name: "Deflator Vintages"
+
+headline_mgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/headline/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesformonthlygdp"
+  dataset_name: "Monthly Vintages"
+
+income_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/investment/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforcomponentsfortheincomeapproachtothemeasureofukgdp"
+  dataset_name: "Income Vintages"
+
+investment_qgdp_vintages:
+  type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
+  writepath: data/01_raw/investmet/
+  base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstogrossfixedcapitalformationandbusinessinvestment"
+  dataset_name: "Investment Vintages"
+
+
+### INTERMEDIATE DATASETS TO PERSIST FOR AIRFLOW - which runs tasks in seperate processes
+# Deflator
+loaded_deflator_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/loaded_deflator_df_list.pkl
+clean_deflator_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/clean_deflator_df_list.pkl
+transformed_deflator_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/transformed_deflator_df_list.pkl
+
+# Expenditure
+loaded_expenditure_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/loaded_expenditure_df_list.pkl
+clean_expenditure_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/clean_expenditure_df_list.pkl
+transformed_expenditure_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/transformed_expenditure_df_list.pkl
+
+# Headline MGDP
+loaded_MGDP_df:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/loaded_MGDP_df.pkl
+clean_MGDP_df:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/clean_MGDP_df.pkl
+transformed_MGDP_dict:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/transformed_MGDP_dict.pkl
+
+# Headline QGDP
+loaded_QGDP_df:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/loaded_QGDP_df.pkl
+clean_QGDP_df:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/clean_QGDP_df.pkl
+transformed_QGDP_dict:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/transformed_QGDP_dict.pkl
+
+# Income
+loaded_income_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/loaded_income_df_list.pkl
+clean_income_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/clean_income_df_list.pkl
+transformed_income_df_list:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/transformed_income_df_list.pkl
+
+
