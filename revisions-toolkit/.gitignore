@@ -1,6 +1,9 @@
 ##########################
 # KEDRO PROJECT
 
+# Ignore notebooks
+*.ipynb
+
 # ignore all local configuration
 conf/local/**
 !conf/local/.gitkeep
