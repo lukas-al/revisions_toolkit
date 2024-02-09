@@ -1,4 +1,4 @@
-### BASE DATASETS FOR STANDARD CONFIG
+### BASE RAW DATASETS FOR STANDARD CONFIG
 example_iris_data:
   type: pandas.CSVDataset
   filepath: data/01_raw/iris.csv

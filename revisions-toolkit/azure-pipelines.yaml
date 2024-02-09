@@ -1,0 +1,41 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.8'
+    addToPath: true
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install kedro
+    pip install astronomer
+    pip install pytest
+  displayName: 'Install dependencies'
+
+- script: |
+    kedro install
+    kedro airflow create
+    kedro package
+  displayName: 'Build Kedro project'
+
+- script: |
+    pytest tests/
+  displayName: 'Run pytest tests'
+
+- script: |
+    astro dev init
+    astro dev start
+  displayName: 'Build Astronomer DAGs'
+
+- script: |
+    astro auth login astronomer.cloud
+    astro deploy REVISIONS-TOOLKIT --force
+  env:
+    ASTRO_CLI_USER: $(ASTRO_CLI_USER)
+    ASTRO_CLI_PASSWORD: $(ASTRO_CLI_PASSWORD)
+  displayName: 'Deploy to Astronomer'

@@ -6,6 +6,7 @@ import logging
 import re
 import zipfile
 import io
+import random
 import time
 import pandas as pd
 
@@ -100,7 +101,26 @@ logger = logging.getLogger(__name__)
 #             return dict(folderpath=self._folderpath, release_date=self._release_date, extracted_files=self._extracted_files)
 
 class GDPVintage(AbstractDataset):
-    
+    """
+    A class representing the GDP vintages (revision triangles) dataset.
+
+    Attributes:
+        _writepath (PurePosixPath): The write path for saving the dataset.
+        _base_url (str): The base URL for downloading the dataset.
+        _name (str): The name of the dataset.
+        _extracted_files (List[str]): The list of extracted files from the dataset.
+        _release_date (str): The release date of the dataset.
+
+    Methods:
+        _load() -> Dict[str, pd.DataFrame]:
+            Loads the GDP vintages (revision triangles) data from the ONS website.
+
+        _save(data: Dict[str, pd.DataFrame]) -> None:
+            Saves the data to the specified filepath.
+
+        _describe() -> Dict[str, Any]:
+            Returns a dictionary that describes the attributes of the dataset.
+    """
     def __init__(self, writepath: str, base_url: str, dataset_name: str):
         self._writepath = PurePosixPath(writepath)
         self._base_url = base_url
@@ -120,6 +140,10 @@ class GDPVintage(AbstractDataset):
         """
         
         logger.info("Downloading the latest release from the ONS website...")
+        
+        # Introduce a short random delay to prevent concurrent Airflow tasks from hitting the same URL at the same time
+        delay = random.uniform(0, 5)
+        time.sleep(delay)
         
         # Send a GET request to the ONS website
         response = boerequests.get(self._base_url)
