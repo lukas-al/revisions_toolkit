@@ -6,6 +6,7 @@ headline_qgdp_vintages:
   base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforukgdpabmi"
   dataset_name: "Headline Vintages"
 
+
 expenditure_qgdp_vintages:
   type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
   writepath: data/01_raw/expenditure/
@@ -14,7 +15,7 @@ expenditure_qgdp_vintages:
 
 deflator_qgdp_vintages:
   type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
-  writepath: data/01_raw/headline/
+  writepath: data/01_raw/deflator/
   base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstrianglesforukgdpdeflatorquarteronquarterayearago"
   dataset_name: "Deflator Vintages"
 

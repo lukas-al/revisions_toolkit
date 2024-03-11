@@ -9,6 +9,7 @@ import io
 import random
 import time
 import pandas as pd
+import os
 
 from kedro.io import AbstractDataset
 
@@ -18,9 +19,7 @@ try:
 except:
     import requests as boerequests
 
-
 logger = logging.getLogger(__name__)
-
 
 class GDPVintage(AbstractDataset):
     """
@@ -68,7 +67,7 @@ class GDPVintage(AbstractDataset):
         time.sleep(delay)
         
         # Send a GET request to the ONS website
-        response = boerequests.get(self._base_url)
+        response = boerequests.get(self._base_url, timeout=5)
         
         # Check if the response was successful
         if response.status_code == 200:
@@ -89,7 +88,7 @@ class GDPVintage(AbstractDataset):
                 self._release_date = None
             
             # Send a GET request to the latest release URL and get the response
-            response = boerequests.get(latest_release_url)
+            response = boerequests.get(latest_release_url, timeout=5)
 
             # Check if the request was successful
             if response.status_code == 200:
@@ -103,7 +102,11 @@ class GDPVintage(AbstractDataset):
                             with z.open(filename) as f:
                                 data[filename] = pd.read_excel(f, sheet_name=None)
                 elif "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" in response.headers.get("content-type"):
-                    data[latest_release_url] = pd.read_excel(io.BytesIO(response.content), sheet_name=None)
+                    data[latest_release_url.split("/")[-1]] = pd.read_excel(io.BytesIO(response.content), sheet_name=None)
+                
+                ## SAVE THE DATA
+                logger.info("Saving the raw data...")
+                self._save(data)
                 
                 # Return the data as a dictionary of dataframes
                 return data
@@ -128,10 +131,18 @@ class GDPVintage(AbstractDataset):
                 None
             """
 
-            for filename, df in data.items():
-                df.to_excel(self._writepath / filename)
-
-            self._extracted_files = data.namelist()  # Log the list of extracted files
+            for filename, df_dict in data.items():      
+                output_file_path = self._writepath / filename
+                
+                # Create the directory if it doesn't exist
+                os.makedirs(output_file_path.parent, exist_ok=True)
+                
+                with pd.ExcelWriter(output_file_path) as writer:
+                    for sheet_name, sheet_df in df_dict.items():
+                        sheet_df.to_excel(writer, sheet_name=sheet_name)
+                                    
+                                    
+            self._extracted_files = list(data.keys())  # Log the list of extracted files
             logger.info(f"Successfully saved the latest {self._name} data release from the ONS website.")
 
     def _describe(self) -> Dict[str, Any]:

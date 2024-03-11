@@ -1,153 +1,68 @@
 # Revisions Toolkit
 
 ## Overview
+This project is intended to help with both obtaining and constructing revisions series for a number of GDP components from the ONS. It's not doing anything super revolutionary.
 
-This is your new Kedro project, which was generated using `kedro 0.19.2`.
+The steps are:
+1. Look to the ONS website and scrape the latest spreadsheets
+2. Clean them up and extract the data
+3. Construct the revisions series
+4. Save the data
 
-Take a look at the [Kedro documentation](https://docs.kedro.org/) to get started.
+The project is structured as a Kedro project, which was generated using `kedro 0.19.2`. Take a look at the [Kedro documentation](https://docs.kedro.org/) to get started. This is done to make it simpler to understand and replicate - though I don't know whether that's actually the case...
 
-## Rules and guidelines
+## How to run the project
+Make sure you've created an environment with the dependencies in `requirements.txt`. If not, you can do this by running the following command:
 
-In order to get the best out of the template:
-
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a [data engineering convention](https://docs.kedro.org/en/stable/faq/faq.html#what-is-data-engineering-convention)
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
-
-## How to install dependencies
-
-Declare any dependencies in `requirements.txt` for `pip` installation.
-
-To install them, run:
-
-```
+```miniconda3
+conda create --name <env_name> 
 pip install -r requirements.txt
 ```
 
-## How to run your Kedro pipeline
+Then navigate to the root file of this project, i.e. where this `README` is located, and activate the environment using the following command:
 
-You can run your Kedro project with:
-
+```miniconda3
+conda activate <env_name>
 ```
+
+and then run the following command to run the project:
+
+```miniconda3
 kedro run
 ```
 
-## How to test your Kedro project
+You should then see the project running, with a bunch of logs and outputs. If you want to run a specific pipeline, you can do so by running the following command:
 
-Have a look at the file `src/tests/test_run.py` for instructions on how to write your tests. You can run your tests as follows:
-
-```
-pytest
+```miniconda3
+kedro run --pipeline <pipeline_name>
 ```
 
-To configure the coverage threshold, look at the `.coveragerc` file.
+The outputs will be saved in the `data/` directory.
 
-## Project dependencies
+## Common errors
+If you're having trouble running the project, you might want to check the following:
 
-To see and update the dependency requirements for your project use `requirements.txt`. You can install the project requirements with `pip install -r requirements.txt`.
+1. Make sure you're in the right environment. You can check this by running `conda env list` and seeing which environment is active.
 
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
+2. The ONS may have changed the format of their spreadsheets, which could cause the scraping to fail. There isn't an easy way to check for this, but you can look at the logs to see if and when the scraping is failing.
 
-## How to work with Kedro and notebooks
+3. Sometimes the initial download might fail or be blocked by the ONS website. It might also be an issue with the Bank's firewall, though those issues should be resolved?
 
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `catalog`, `context`, `pipelines` and `session`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
+## Further information
+* Project configuration (i.e. the base links to the ONS files) can be found in `conf/base/catalog.yml`. This defines the 'catalog' of data that the project will scrape and process.
+* The code which downloads the data is primarily in `src/revisions_toolkit/datasets/gdp_datasets.py`. This contains the logic for scraping the data from the ONS website.
+* The code which processes the data once it's been downloaded is primarily in `src/revisions_toolkit/pipelines/headline_Qgdp/nodes`. This contains the majority of the logic for cleaning and processing the data, with most of the other nodes simply copying the logic from here and applying it to different datasets.
 
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
 
-```
-pip install jupyter
-```
+## Notes
+This project was completed more as a proof-of-concept, and there's lots of things I'd change about it looking back.
 
-After installing Jupyter, you can start a local notebook server:
+Here are some improvements to make:
+* Flatten and simplify a lot of the config stuff. It's currently quite complex.
+* Rationalise the pipelines - they're all logically doing the same thing but with different datasets. This could be abstracted out into a single pipeline.
+* Rationalise the package structure. It could be improved to make it clearer what's going on and where the logic is.
+* Save the raw data. Currently the raw data is not saved, which makes it difficult to debug if something goes wrong.
+* Put some tests for the obvious break points, such as the scraping and formatting of the input spreadsheets. This would make it easier to debug and maintain.
+* Some better documentation using Sphinx or similar would be good.
 
-```
-kedro jupyter notebook
-```
 
-### JupyterLab
-To use JupyterLab, you need to install it:
-
-```
-pip install jupyterlab
-```
-
-You can also start JupyterLab:
-
-```
-kedro jupyter lab
-```
-
-### IPython
-And if you want to run an IPython session:
-
-```
-kedro ipython
-```
-
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
-
-> *Note:* Your output cells will be retained locally.
-
-## Package your Kedro project
-
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
-
-## Run your project in Airflow
-
-The easiest way to run your project in Airflow is by [installing the Astronomer CLI](https://www.astronomer.io/docs/cloud/stable/get-started/quickstart#step-4-install-the-astronomer-cli)
-and follow the following instructions:
-
-Package your project:
-```shell
-kedro package
-```
-
-Copy the package at the root of the project such that the Docker images 
-created by the Astronomer CLI can pick it up:
-```shell
-cp src/dist/*.whl ./
-```
-
-Generate a catalog file with placeholders for all the in-memory datasets:
-```shell
-kedro catalog create --pipeline=__default__
-```
-
-Edit the file `conf/base/catalog/__default__.yml` and choose a way to 
-persist the datasets rather than store them in-memory. E.g.:
-```yaml
-example_train_x:
-  type: pickle.PickleDataset
-  filepath: data/05_model_input/example_train_x.pkl
-example_train_y:
-  type: pickle.PickleDataset
-  filepath: data/05_model_input/example_train_y.pkl
-example_test_x:
-  type: pickle.PickleDataset
-  filepath: data/05_model_input/example_test_x.pkl
-example_test_y:
-  type: pickle.PickleDataset
-  filepath: data/05_model_input/example_test_y.pkl
-example_model:
-  type: pickle.PickleDataset
-  filepath: data/06_models/example_model.pkl
-example_predictions:
-  type: pickle.PickleDataset
-  filepath: data/07_model_output/example_predictions.pkl
-```
-
-Install the Kedro Airflow plugin and convert your pipeline into an Airflow dag:
-```shell
-pip install kedro-airflow
-kedro airflow create -t dags/
-```
-
-Run your local Airflow instance through Astronomer:
-```shell
-astro dev start
-```
