@@ -40,8 +40,20 @@ def main(*args, **kwargs):
     package_name = Path(__file__).parent.name
     configure_project(package_name)
     run = _find_run_command(package_name)
-    run(*args, **kwargs)
-
+    
+    # Get all the pipelines
+    pipelines = run().pipeline_registry.pipelines
+    
+    # Run the pipelines sequentially
+    for pipeline_name, pipeline in pipelines.items():
+        try:
+            pipeline()
+        except Exception as e:
+            print(f"Pipeline '{pipeline_name}' failed with error: {str(e)}")
+    
+    # Continue past failed pipelines
+    print("All pipelines executed")
+    
 
 if __name__ == "__main__":
     main()

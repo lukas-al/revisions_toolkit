@@ -1,13 +1,15 @@
 jupyterlab>=3.0
 notebook
+python~=3.10
 kedro~=0.19.2
-kedro-datasets[pandas.CSVDataset]>=1.0
-kedro-airflow~=0.5
-kedro-telemetry>=0.3.1
-pytest-cov~=3.0
-pytest-mock>=1.7.1, <2.0
-pytest~=7.2
-ruff~=0.1.8
+# kedro-viz~=7.1
+# kedro-airflow~=0.5
+# kedro-telemetry>=0.3.1
+# pytest-cov~=3.0
+# pytest-mock>=1.7.1, <2.0
+# pytest~=7.2
+# ruff~=0.1.8
 openpyxl~=3.1
 xlrd~=2.0
 pandas~=2.2
+requests~=2.26

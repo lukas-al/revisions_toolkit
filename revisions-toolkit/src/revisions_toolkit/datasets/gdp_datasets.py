@@ -9,6 +9,7 @@ import io
 import random
 import time
 import pandas as pd
+import os
 
 from kedro.io import AbstractDataset
 
@@ -19,86 +20,6 @@ except:
     import requests as boerequests
 
 logger = logging.getLogger(__name__)
-
-
-# class HeadlineMGDPVintage(AbstractDataset):
-#     """A class representing the Headline Monthly GDP Vintage dataset.
-
-#     This dataset contains the monthly revisions of the Headline Monthly GDP data.
-
-#     Args:
-#         folderpath (str): The folder path where the data will be saved.
-
-#     Attributes:
-#         _base_url (str): The base URL for downloading the data.
-#         _folderpath (PurePosixPath): The folder path where the data will be saved.
-#         _extracted_files (list): A list of extracted file names.
-#         _release_date (str): The release date of the dataset.
-#     """
-
-
-#     def __init__(self, folderpath: str):
-#         self._base_url = "https://www.ons.gov.uk/file?uri=/economy/grossdomesticproductgdp/datasets/revisionstrianglesformonthlygdp/current/" 
-#         self._folderpath = PurePosixPath(folderpath)
-#         self._extracted_files = None
-#         self._release_date = None
-
-
-#     def _load(self) -> Dict[str, pd.DataFrame]:
-#         """Load the Headline Monthly GDP Vintage dataset.
-
-#         Returns:
-#             dict: A dictionary containing the dataframes for each sheet in the dataset.
-
-#         Raises:
-#             FileNotFoundError: If the expected file is not found in the downloaded zip file.
-#         """
-
-#         logger.info("Downloading the latest Monthly GDP release from the ONS website...")
-        
-#         # Load the data
-#         response_data = get_latest_data(self._base_url)
-
-#         expected_file = "MGDP Revision triangle (M on M).xlsx"
-#         if expected_file not in zipfile.ZipFile(io.BytesIO(response_data.content)).namelist():
-#             logger.error("[bold red blink]Failed to download the latest release due to missing file: " + expected_file, extra={"markup": True})
-#             raise FileNotFoundError(f"The expected file {expected_file} is not in the zip file.")
-        
-#         # Load the data as a dictionary to hold each sheet within a df
-#         data = {}
-#         with zipfile.ZipFile(io.BytesIO(response_data.content)) as z:
-#             for filename in z.namelist():
-#                 with z.open(filename) as f:
-#                     data[filename] = pd.read_excel(f, sheet_name=None)
-        
-#         # Return the data as a dictionary of dataframes
-#         return data
-
-
-#     def _save(self, data: Dict[str, pd.DataFrame]) -> None:
-#         """Save the data to the specified filepath.
-
-#         Args:
-#             data (dict): A dictionary containing the dataframes to be saved.
-#         """
-
-#         for filename, df in data.items():
-#             df.to_excel(self._folderpath / filename)
-
-#         self._extracted_files = data.namelist()
-#         logger.info("Successfully saved the latest MGDP release data from the ONS website.")
-
-
-#     def _describe(self) -> Dict[str, Any]:
-#             """Returns a dictionary that describes the attributes of the dataset.
-
-#             Returns:
-#                 A dictionary containing the following attributes:
-#                 - folderpath: The folder path of the dataset.
-#                 - release_date: The release date of the dataset.
-#                 - extracted_files: The list of extracted files from the dataset.
-#             """
-#             return dict(folderpath=self._folderpath, release_date=self._release_date, extracted_files=self._extracted_files)
 
 class GDPVintage(AbstractDataset):
     """
@@ -146,7 +67,7 @@ class GDPVintage(AbstractDataset):
         time.sleep(delay)
         
         # Send a GET request to the ONS website
-        response = boerequests.get(self._base_url)
+        response = boerequests.get(self._base_url, timeout=5)
         
         # Check if the response was successful
         if response.status_code == 200:
@@ -167,7 +88,7 @@ class GDPVintage(AbstractDataset):
                 self._release_date = None
             
             # Send a GET request to the latest release URL and get the response
-            response = boerequests.get(latest_release_url)
+            response = boerequests.get(latest_release_url, timeout=5)
 
             # Check if the request was successful
             if response.status_code == 200:
@@ -181,7 +102,11 @@ class GDPVintage(AbstractDataset):
                             with z.open(filename) as f:
                                 data[filename] = pd.read_excel(f, sheet_name=None)
                 elif "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" in response.headers.get("content-type"):
-                    data[latest_release_url] = pd.read_excel(io.BytesIO(response.content), sheet_name=None)
+                    data[latest_release_url.split("/")[-1]] = pd.read_excel(io.BytesIO(response.content), sheet_name=None)
+                
+                ## SAVE THE DATA
+                logger.info("Saving the raw data...")
+                self._save(data)
                 
                 # Return the data as a dictionary of dataframes
                 return data
@@ -206,10 +131,18 @@ class GDPVintage(AbstractDataset):
                 None
             """
 
-            for filename, df in data.items():
-                df.to_excel(self._writepath / filename)
-
-            self._extracted_files = data.namelist()  # Log the list of extracted files
+            for filename, df_dict in data.items():      
+                output_file_path = self._writepath / filename
+                
+                # Create the directory if it doesn't exist
+                os.makedirs(output_file_path.parent, exist_ok=True)
+                
+                with pd.ExcelWriter(output_file_path) as writer:
+                    for sheet_name, sheet_df in df_dict.items():
+                        sheet_df.to_excel(writer, sheet_name=sheet_name)
+                                    
+                                    
+            self._extracted_files = list(data.keys())  # Log the list of extracted files
             logger.info(f"Successfully saved the latest {self._name} data release from the ONS website.")
 
     def _describe(self) -> Dict[str, Any]:

@@ -20,9 +20,9 @@ data/**
 # also keep all .gitkeep files
 !.gitkeep
 
-# also keep the example dataset
-!data/01_raw/*.csv
-
+# Delete some telemetry and data files
+.telemetry
+stats.json
 
 ##########################
 # Common files

@@ -42,20 +42,6 @@ def load_data(
     
     return df_holder
 
-# def save_raw_data(data: pd.DataFrame, name: str) -> None:
-#     """Save the data to the specified filepath.
-    
-#     Args:
-#         data (pd.DataFrame): The DataFrame containing the data to be saved.
-    
-#     Returns:
-#         None
-#     """
-#     log.info("Saving the raw data...")
-    
-#     with pd.ExcelWriter(f"data/01_raw/{name}") as writer:
-#         data.to_excel(writer, sheet_name="Raw data", index=True)
-        
 
 def clean_quarterly_data(data_list: List[pd.DataFrame]) -> pd.DataFrame:
     """
@@ -171,7 +157,7 @@ def save_data(data_list: List[dict], input_name_list: List[str], save_path: str)
             
     
 
-def construct_revision_series(revisions_triange: pd.DataFrame, periods: int) -> pd.Series:
+def construct_revision_series(revisions_triangle: pd.DataFrame, periods: int) -> pd.Series:
     """
     Construct the revision series from the revisions triangle, given the specified period.
     Convenience function used in the transform_and_merge node.
@@ -185,25 +171,29 @@ def construct_revision_series(revisions_triange: pd.DataFrame, periods: int) -> 
         
     If the passed period = 0, then the first estimate series is returned.
     """
-    revision_series = pd.Series(index=revisions_triange.index, name=f"{periods}_period_revision_series")
+    revision_series = pd.Series(index=revisions_triangle.index, name=f"{periods}_period_revision_series")
     
     if periods == 0:
         # Assume the user wants the first estimate series
-        for idx in revisions_triange.index:
+        for idx in revisions_triangle.index:
             # Get the first estimate
-            first_estimate = revisions_triange.loc[idx].dropna().iloc[0]
-            revision_series.loc[idx] = first_estimate
-            
+            try:
+                first_estimate = revisions_triangle.loc[idx].dropna().iloc[0]
+            except IndexError:
+                first_estimate = pd.NA   
+                
+            revision_series.loc[idx] = first_estimate         
     else:
         # Calculate the revisions series
-        for idx in revisions_triange.index:
-            # Get the first estimate
-            first_estimate = revisions_triange.loc[idx].dropna().iloc[0]
+        for idx in revisions_triangle.index:
             
+            # Get the first estimate            
             # Get the estimate relevant to the period
             try:
-                final_estimate = revisions_triange.loc[idx].dropna().iloc[periods]
+                first_estimate = revisions_triangle.loc[idx].dropna().iloc[0]
+                final_estimate = revisions_triangle.loc[idx].dropna().iloc[periods]
             except IndexError:
+                first_estimate = pd.NA
                 final_estimate = pd.NA
 
             # Calculate the revision series
