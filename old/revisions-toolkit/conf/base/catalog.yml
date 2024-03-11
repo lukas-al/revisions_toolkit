@@ -33,6 +33,6 @@ income_qgdp_vintages:
 
 investment_qgdp_vintages:
   type: revisions_toolkit.datasets.gdp_datasets.GDPVintage
-  writepath: data/01_raw/investmet/
+  writepath: data/01_raw/investment/
   base_url: "https://www.ons.gov.uk/economy/grossdomesticproductgdp/datasets/revisionstogrossfixedcapitalformationandbusinessinvestment"
   dataset_name: "Investment Vintages"

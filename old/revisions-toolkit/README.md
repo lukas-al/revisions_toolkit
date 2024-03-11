@@ -1,7 +1,7 @@
 # Revisions Toolkit
 
 ## Overview
-This project is intended to help with both obtaining and constructing revisions series for a number of GDP components from the ONS. It's not doing anything super revolutionary.
+This project is intended to help with both obtaining and constructing revisions series for a number of GDP components from the ONS. It's not doing anything revolutionary.
 
 The steps are:
 1. Look to the ONS website and scrape the latest spreadsheets

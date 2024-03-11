@@ -3,6 +3,7 @@
 
 # Ignore notebooks
 *.ipynb
+!revisions_toolkit.ipynb
 
 # ignore all local configuration
 conf/local/**
